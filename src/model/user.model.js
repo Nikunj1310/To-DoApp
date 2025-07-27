@@ -24,6 +24,7 @@ const userSchema = new mongoose.Schema({
     }
 });
 
+//securing the password
 userSchema.pre('save', async function () {
     try {
         let user = this;
