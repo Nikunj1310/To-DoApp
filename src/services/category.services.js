@@ -3,12 +3,12 @@ const taskModel = require('../model/task.model');
 
 class CategoryService{
 
-    static async createCategory(owner, name, description) {
+    static async createCategory(owner, name, description, color) {
         try {
-            const newCategory = new CategoryModel({ owner, name, description });
+            const newCategory = new CategoryModel({ owner, name, description, color });
             return await newCategory.save();
         } catch (err) {
-            throw new Error(err.message);
+            throw err;
         }
     }
 
@@ -16,7 +16,7 @@ class CategoryService{
         try{
             const category = await CategoryModel.find({owner: owner});
             if(!category || category.length === 0){
-                throw new Error('No categories found for this owner');
+                throw new Error('Create Cetgories and get started!');
             }
             console.log(category);
             return category; 
@@ -39,7 +39,7 @@ class CategoryService{
                 taskCount: tasks.deletedCount
              };
         } catch (err) {
-            throw new Error(err.message);
+            throw err.message;
         }
     }
 

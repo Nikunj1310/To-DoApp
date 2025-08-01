@@ -21,6 +21,10 @@ const categorySchema = new mongoose.Schema({
         type: String,
         default: 'None',
         
+    },
+    color:{
+        type: String,
+        default:"#FFFFFF"
     }
 });
 

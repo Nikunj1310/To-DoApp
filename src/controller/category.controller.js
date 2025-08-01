@@ -5,7 +5,8 @@ joi.objectId = require('joi-objectid')(joi);
 const categoryCreateSchema = joi.object({
     owner: joi.objectId().required(),
     name: joi.string().required(),
-    description: joi.string().optional()
+    description: joi.string().optional(),
+    color: joi.string().length(7).optional(),
 })
 
 const categoryFindSchema = joi.object({
@@ -18,54 +19,57 @@ const deleteCategorySchema = joi.object({
 })
 
 exports.createCategory = async (req, res, next) => {
-    try {   
+    try {
 
-        const {error} = categoryCreateSchema.validate(req.body);
-        if(error){
-            res.status(500).json({message: error.details[0].message});
+        const { error } = categoryCreateSchema.validate(req.body);
+        if (error) {
+            res.status(500).json({ message: error.details[0].message });
             return;
         }
-        const { owner, name, description} = req.body;
-        const category = await CategoryService.createCategory(owner, name, description);
+        const { owner, name, description, color } = req.body;
+        const category = await CategoryService.createCategory(owner, name, description, color);
         res.status(201).json({
             message: "A new category created",
-            category: name,
-            description: description
+            category,
         })
 
     } catch (err) {
-        res.status(500).json({ message: err });
-        throw err;
+        if (err.code === 11000) {//checks if an  attempt to make a duplicate was made or not
+            res.status(400).json({message:`The category already exists!`})
+        } else {
+            res.status(500).json({ message: err.message });
+            throw err.message;  
+        }
     }
 }
 
 exports.getCategory = async (req, res, next) => {
-    try{
-        const {error} = categoryFindSchema.validate(req.body);
-        if(error){
-            res.status(500).json({message: error.details[0].message});
+    try {
+        const { error } = categoryFindSchema.validate(req.body);
+        if (error) {
+            res.status(500).json({ message: error.details[0].message });
             return;
         }
         const { owner } = req.body;
         const categories = await CategoryService.getCategory(owner);
         res.status(201).json({
-            message:"Welcome back, your tasks have been fetched successfully",
+            message: "Welcome back, your tasks have been fetched successfully",
             categories: categories
         })
-    }catch(err){
+    } catch (err) {
         res.status(500).json({ message: err.body || err.message });
         throw err;
     }
 }
 
 exports.deleteCategory = async (req, res, next) => {
-    try{
-        const {error} = deleteCategorySchema.validate(req.body);
-        if(error){
-            res.status(500).json({message: error.details[0].message});
+    try {
+        const { error } = deleteCategorySchema.validate(req.body);
+        if (error) {
+            res.status(500).json({ message: error.details[0].message });
             return;
         }
-        const {owner, id} = req.body;
+        const { owner, id } = req.body;
         const response = await CategoryService.deleteCategory(owner, id);
         res.status(201).json({
             message: response.message,
@@ -73,8 +77,8 @@ exports.deleteCategory = async (req, res, next) => {
             tasks: response.tasks,
             taskCount: response.taskCount
         });
-    }catch(err){
+    } catch (err) {
         res.status(500).json({ message: err.message });
-        throw err;  
+        throw err;
     }
 }
