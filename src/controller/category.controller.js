@@ -12,6 +12,11 @@ const categoryFindSchema = joi.object({
     owner: joi.objectId().required(),
 })
 
+const deleteCategorySchema = joi.object({
+    owner: joi.objectId().required(),
+    id: joi.objectId().required()
+})
+
 exports.createCategory = async (req, res, next) => {
     try {   
 
@@ -50,5 +55,26 @@ exports.getCategory = async (req, res, next) => {
     }catch(err){
         res.status(500).json({ message: err.body || err.message });
         throw err;
+    }
+}
+
+exports.deleteCategory = async (req, res, next) => {
+    try{
+        const {error} = deleteCategorySchema.validate(req.body);
+        if(error){
+            res.status(500).json({message: error.details[0].message});
+            return;
+        }
+        const {owner, id} = req.body;
+        const response = await CategoryService.deleteCategory(owner, id);
+        res.status(201).json({
+            message: response.message,
+            category: response.category,
+            tasks: response.tasks,
+            taskCount: response.taskCount
+        });
+    }catch(err){
+        res.status(500).json({ message: err.message });
+        throw err;  
     }
 }

@@ -1,4 +1,5 @@
 const CategoryModel = require('../model/category.model');
+const taskModel = require('../model/task.model');
 
 class CategoryService{
 
@@ -22,6 +23,23 @@ class CategoryService{
             
         }catch(err){
             throw new Error(err)
+        }
+    }
+
+    static async deleteCategory(owner, id) {
+        try {
+            const category = await CategoryModel.findOneAndDelete({ _id: id, owner: owner });
+            const tasks = await taskModel.deleteMany({ category: id , owner: owner });
+            if (!category) {
+                throw new Error('Category not found');
+            }
+            return { message: 'Category alogn with the tasks deleted successfully',
+                category : category,
+                tasks: tasks,
+                taskCount: tasks.deletedCount
+             };
+        } catch (err) {
+            throw new Error(err.message);
         }
     }
 
