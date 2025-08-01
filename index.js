@@ -4,9 +4,6 @@ const app = require('./src/app')
 const db = require('./src/db/connectDB');
 const UserModel = require('./src/model/user.model')
 
-app.get('/',(req,res)=>{
-    res.send("hello there!!!")
-})
 
 const port = process.env.PORT || 3000;
 app.listen(port,()=>{
