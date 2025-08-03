@@ -1,5 +1,5 @@
+const { create } = require('../model/user.model');
 const TaskService = require('../services/task.services');
-const taskService = require('../services/task.services');
 const joi = require('joi');
 joi.objectId = require('joi-objectid')(joi);
 
@@ -8,7 +8,8 @@ const createTaskSchema = joi.object({
     category: joi.objectId().required(),
     title: joi.string().required(),
     description: joi.string().optional(),
-    DeadLine: joi.date().optional()
+    DeadLine: joi.date().optional(),
+    createdAt: joi.date().required(),
 });
 
 const getTasksSchema = joi.object({
@@ -23,7 +24,8 @@ const updateTaskSchema = joi.object({
     isCompleted: joi.boolean().optional(),
     title: joi.string().optional(),
     description: joi.string().optional(),
-    DeadLine: joi.date().optional()
+    DeadLine: joi.date().optional(),
+    createdAt: joi.date().optional()
 })
 
 const deleteTaskSchema = joi.object({
@@ -38,8 +40,8 @@ exports.createTask = async (req, res, next) => {
             res.status(500).json({message:error.details[0].message});
             return;
         }
-        const { owner, category, title, description, DeadLine } = req.body;
-        const task = await taskService.createTask(owner, category, title, description, DeadLine);
+        const { owner, category, title, description, DeadLine, createdAt } = req.body;
+        const task = await TaskService.createTask(owner, category, title, description, createdAt, DeadLine);
         res.status(201).json({
             message: "Task created successfully",
             task: {
@@ -68,7 +70,7 @@ exports.getTasks = async (req, res, next) => {
             return;
         }
         const {owner, category} = req.body;
-        const tasks = await taskService.getTasks(owner,category);
+        const tasks = await TaskService.getTasks(owner,category);
         res.status(201).json({
             message: "Tasks fetched successfully",
             tasks: tasks.map(task => ({
@@ -97,9 +99,9 @@ exports.updateTask = async (req,res,next)=>{
             return;
         }
 
-        const {owner, id, title, description, DeadLine, isCompleted, category} = req.body;
+        const {owner, id, title, description, DeadLine, isCompleted, category, createdAt} = req.body;
 
-        const newTask = await TaskService.updateTask(owner, id, title, description, DeadLine, isCompleted, category);
+        const newTask = await TaskService.updateTask(owner, id, title, description, DeadLine, isCompleted, category, createdAt);
         res.status(201).json({
             message: "Task updated successfully",
             task: {
@@ -137,3 +139,17 @@ exports.deleteTask = async (req,res,next)=>{
         throw err;
     }
 }
+
+exports.deleteAllTasksOfCategory = async (req, res, next) => {
+  try {
+    const { owner, category } = req.body;
+    if (!owner || !category) {
+      return res.status(400).json({ message: 'Owner and category are required' });
+    }
+    const response = await taskService.deleteAllTasksOfCategory(owner, category);
+    res.status(201).json(response);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+    throw err;
+  }
+};

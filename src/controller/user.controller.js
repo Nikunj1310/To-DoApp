@@ -12,6 +12,10 @@ const loginSchema = joi.object({
     password: joi.string().min(6).required(),
 })
 
+const deleteUserSchema = joi.object({
+    userId: joi.string().required()
+})
+
 exports.register = async (req, res, next) => {
     try {
         const { error } = registerSchema.validate(req.body);
@@ -24,7 +28,13 @@ exports.register = async (req, res, next) => {
         res.status(201).json(
             {
                 status: true,
-                success: "User has been regitered successfully"
+                success: "User has been regitered successfully",
+                user:{
+                    id: user._id,
+                    name: user.name,
+                    email: user.email,
+                    createdAt: user.createdAt
+                }
             })
     } catch (err) {
         // res.status(500).json({message: err.message}); This does this:
@@ -59,6 +69,35 @@ exports.login = async (req,res,next)=>{
         res.status(500);
         res.setHeader('Content-Type','application/json');
         res.send(JSON.stringify(err)) */
+        throw err;
+    }
+
+
+
+}
+
+exports.deleteUser = async (req, res, next) => {
+    try {
+        
+        const {error} = deleteUserSchema.validate(req.body);
+        if (error) {
+            res.status(400).json({ message: error.details[0].message });
+            return;
+        }
+
+        const { userId } = req.body;
+        if (!userId) {
+            res.status(400).json({ message: "User ID is required" });
+            return;
+        }
+        const result = await UserService.deleteUser(userId);
+        if (result) {
+            res.status(201).json({ message: "User deleted successfully" });
+        } else {
+            res.status(404).json({ message: "User not found" });
+        }
+    } catch (err) {
+        res.status(500).json({ message: err.message });
         throw err;
     }
 }

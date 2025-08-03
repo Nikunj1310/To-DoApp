@@ -82,3 +82,25 @@ exports.deleteCategory = async (req, res, next) => {
         throw err;
     }
 }
+
+const updateCategorySchema = joi.object({
+  owner: joi.objectId().required(),
+  id: joi.objectId().required(),
+  name: joi.string().required(),
+  description: joi.string().optional(),
+  color: joi.string().length(7).optional(),
+});
+
+exports.updateCategory = async (req, res, next) => {
+  try {
+    const { error } = updateCategorySchema.validate(req.body);
+    if (error) return res.status(500).json({ message: error.details[0].message });
+
+    const { owner, id, name, description, color } = req.body;
+    const category = await CategoryService.updateCategory(owner, id, name, description, color);
+    res.status(201).json({ message: "Category updated successfully", category });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+    throw err;
+  }
+};

@@ -28,6 +28,17 @@ class UserService{
             throw err.message;
         }
     }
+    static async deleteUser(userId){
+        try{
+            const user = await UserModel.findByIdAndDelete(userId);
+            if(!user){
+                return false; // User not found
+            }
+            return true; // User deleted successfully
+        }catch(err){
+            throw err.message;
+        }
+    }
 };
 
 module.exports = UserService;

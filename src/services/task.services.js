@@ -1,12 +1,14 @@
+const { createRef } = require('react');
 const taskModel = require('../model/task.model');
 
 class TaskService {
-    static async createTask(owner, category, title, description, dueDate) {
+    static async createTask(owner, category, title, description, createdAt,dueDate) {
         try {
             const task = new taskModel({
                 owner: owner,
                 category: category,
                 title: title,
+                createdAt: createdAt,
                 description: description,
                 DeadLine: dueDate
             });
@@ -16,9 +18,9 @@ class TaskService {
             throw new Error(err);
         }
     }
-    static async getTasks(owner, category) {
+    static async getTasks(owner, category, createdAt) {
         try {
-            const tasks = await taskModel.find({ owner: owner, category: category });
+            const tasks = await taskModel.find({ owner: owner, category: category, createdAt: createdAt });
             if (!tasks || tasks.length === 0) {
                 throw new Error('No tasks has been created');
                 return;
@@ -35,7 +37,7 @@ class TaskService {
             throw err;
         }
     }
-    static async updateTask(owner, taskID, title, description, DeadLine, isCompleted, category) {
+    static async updateTask(owner, taskID, title, description, DeadLine, isCompleted, category, createdAt) {
         try {
             if (!taskID || !owner) { throw new Error('Required IDs are missing'); }
             const task = await taskModel.findOne({ _id: taskID, owner: owner });
@@ -52,6 +54,9 @@ class TaskService {
             }
             if (DeadLine) {
                 task.DeadLine = DeadLine;
+            }
+            if(createdAt) {
+                task.createdAt = createdAt;
             }
 
             if (isCompleted) {
@@ -74,6 +79,15 @@ class TaskService {
             if(!task){ throw new Error('Task not found'); return; }
             return { message: 'Task deleted successfully' };
         }catch(err){
+            throw err;
+        }
+    }
+
+    static async deleteAllTasksOfCategory(owner, category) {
+        try {
+            const result = await taskModel.deleteMany({ owner: owner, category: category });
+            return { message: `${result.deletedCount} tasks deleted successfully` };
+        } catch (err) {
             throw err;
         }
     }
